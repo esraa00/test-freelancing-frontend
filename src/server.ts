@@ -3,6 +3,7 @@ import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 dotenv.config();
 import authRoutes from "./routes/auth.route";
+import emailRoutes from "./routes/email.route";
 import errorHandling from "./middleware/error-handling.middleware";
 import("../prisma/client");
 import cors from "cors";
@@ -16,6 +17,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 app.use("/api/auth", authRoutes);
+app.use("/api/email", emailRoutes);
 app.use(errorHandling);
 
 app.listen(port, () => {
