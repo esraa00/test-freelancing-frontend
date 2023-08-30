@@ -22,8 +22,9 @@ export const login = async (
     const accessToken = await authService.login(req.body);
     res
       .cookie("accessToken", accessToken, {
-        maxAge: +process.env.USER_ACCESS_TOKEN_COOKIE_EXPIRY_DATE,
+        maxAge: 30 * 60 * 1000,
       })
+      .status(200)
       .json({ status: 200 });
   } catch (error) {
     next(error);
