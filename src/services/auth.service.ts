@@ -1,8 +1,16 @@
-import { create } from "./user.service";
+import { create, findByEmail } from "./user.service";
 import { sendMail } from "./email.service";
 import bcrypt from "bcrypt";
 import { serializeUser } from "../utils/serialize";
 import { hashEmailVerificationToken } from "./email.service";
+import { ApiError } from "../response-handler/api-error";
+import jwt from "jsonwebtoken";
+
+const createAccessToken = (userId: number) => {
+  return jwt.sign({ userId }, process.env.USER_ACCESS_TOKEN_KEY, {
+    expiresIn: process.env.USER_ACCESS_TOKEN_EXPIRY_DATE,
+  });
+};
 
 export const signup = async ({
   firstName,
@@ -25,7 +33,7 @@ export const signup = async ({
   const token = hashEmailVerificationToken(createdUser.id);
   sendMail({
     to: createdUser.email,
-    subject: "Email Verification",
+    subject: "Hello store Email Verification",
     from: "em4728644@gmail.com",
     html: `
     <h1>Hello Store</h1>
@@ -34,4 +42,21 @@ export const signup = async ({
     `,
   });
   return serializeUser(createdUser);
+};
+
+export const login = async ({
+  email,
+  password,
+}: {
+  email: string;
+  password: string;
+}) => {
+  const userFound = await findByEmail(email);
+
+  const doesPasswordMatches = bcrypt.compareSync(password, userFound.password);
+  if (!doesPasswordMatches)
+    throw ApiError.UnAuthorized("password is incorrect");
+
+  const accessToken = createAccessToken(userFound.id);
+  return accessToken;
 };

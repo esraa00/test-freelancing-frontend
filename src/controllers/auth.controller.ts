@@ -12,3 +12,21 @@ export const signup = async (
     next(error);
   }
 };
+
+export const login = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const accessToken = await authService.login(req.body);
+    res
+      .cookie("accessToken", accessToken, {
+        maxAge: 30 * 60 * 1000,
+      })
+      .status(200)
+      .json({ status: 200 });
+  } catch (error) {
+    next(error);
+  }
+};

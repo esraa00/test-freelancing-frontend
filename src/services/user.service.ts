@@ -34,3 +34,9 @@ export const updateUser = async (user: Partial<User>, userId: number) => {
   if (!userUpdated) throw ApiError.NotFound("no user found to update");
   return userUpdated;
 };
+
+export const findByEmail = async (email: string) => {
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) throw ApiError.NotFound("user not found");
+  return user;
+};
