@@ -5,6 +5,7 @@ import { serializeUser } from "../utils/serialize";
 import { hashEmailVerificationToken } from "./email.service";
 import { ApiError } from "../response-handler/api-error";
 import jwt from "jsonwebtoken";
+import speakeasy from "speakeasy";
 
 const createAccessToken = (userId: number) => {
   return jwt.sign({ userId }, process.env.USER_ACCESS_TOKEN_KEY, {
@@ -24,11 +25,16 @@ export const signup = async ({
   password: string;
 }) => {
   const hashedPassword = bcrypt.hashSync(password, 10);
+  var secret = speakeasy.generateSecret({ name: "Your Store Name" });
   const createdUser = await create({
     firstName,
     lastName,
     email,
     password: hashedPassword,
+    otpAscii: secret.ascii,
+    otpHex: secret.hex,
+    otpBase32: secret.base32,
+    otpAuthUrl: secret.otpauth_url,
   });
   const token = hashEmailVerificationToken(createdUser.id);
   sendMail({
@@ -57,6 +63,12 @@ export const login = async ({
   if (!doesPasswordMatches)
     throw ApiError.UnAuthorized("password is incorrect");
 
+  if (!userFound.isEmailConfirmed)
+    throw ApiError.UnAuthorized("please confirm your email first");
+
   const accessToken = createAccessToken(userFound.id);
-  return accessToken;
+  return {
+    accessToken,
+    isOtpVerified: userFound.isOtpVerified,
+  };
 };
