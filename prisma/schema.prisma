@@ -16,7 +16,12 @@ model User {
   lastName          String
   email             String         @unique()
   password          String
-  isEmailConfirmed  Boolean    @default(false)
+  isEmailConfirmed  Boolean        @default(false)
+  isOtpVerified     Boolean        @default(false)
+  otpAscii          String
+  otpHex            String
+  otpBase32         String
+  otpAuthUrl        String
   createdAt         DateTime       @default(now())
   updatedAt         DateTime       @updatedAt
-} 
+}
