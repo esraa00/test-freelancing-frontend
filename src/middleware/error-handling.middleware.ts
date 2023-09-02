@@ -10,13 +10,12 @@ const errorHandling = (
   if (err instanceof ValidationError) {
     console.log("err.details", err.details);
     const error = err.details.body[0].message;
-    return res.status(err.statusCode).json({ error });
+    return res.status(err.statusCode).json({ message: error });
   }
   if (err instanceof ApiError) {
-    console.log("instance of api error");
-    return res.status(err.code).json(err.message);
+    return res.status(err.code).json({ message: err.message });
   }
-  return res.status(500).json(err.message);
+  return res.status(500).json({ message: err.message });
 };
 
 export default errorHandling;
