@@ -8,10 +8,14 @@ import speakeasy from "speakeasy";
 import { Prisma } from "@prisma/client";
 import { sign } from "./jwt.service";
 
-const createAccessToken = (userId: number) => {
-  return sign({ userId }, process.env.USER_ACCESS_TOKEN_KEY, {
-    expiresIn: process.env.USER_ACCESS_TOKEN_EXPIRY_DATE,
-  });
+const createAccessToken = (userId: number, is2FaAuthenticated: boolean) => {
+  return sign(
+    { userId, is2FaAuthenticated },
+    process.env.USER_ACCESS_TOKEN_KEY,
+    {
+      expiresIn: process.env.USER_ACCESS_TOKEN_EXPIRY_DATE,
+    }
+  );
 };
 
 export const signup = async ({
@@ -77,7 +81,7 @@ export const login = async ({
   if (!userFound.isEmailConfirmed)
     throw ApiError.UnAuthorized("please confirm your email first");
 
-  const accessToken = createAccessToken(userFound.id);
+  const accessToken = createAccessToken(userFound.id, false);
   return {
     accessToken,
     isOtpVerified: userFound.isOtpVerified,
