@@ -6,7 +6,11 @@ const isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
   const accessToken = req.cookies.accessToken;
   if (!accessToken) throw ApiError.Forbidden("please login again");
 
-  const { userId } = verify(accessToken, process.env.USER_ACCESS_TOKEN_KEY);
+  const { userId } = verify(
+    "your session",
+    accessToken,
+    process.env.USER_ACCESS_TOKEN_KEY
+  );
   req.userId = userId;
   next();
 };

@@ -6,12 +6,12 @@ export const confirmEmail = async (
   res: Response,
   next: NextFunction
 ) => {
-  try {
-    const { userId } = verify(req.params.token, process.env.EMAIL_SECRET_TOKEN);
-    await updateUser({ isEmailConfirmed: true }, userId);
-  } catch (error) {
-    next(error);
-  }
+  const { userId } = verify(
+    "token",
+    req.params.token,
+    process.env.EMAIL_SECRET_TOKEN
+  );
+  await updateUser({ isEmailConfirmed: true }, userId);
 
   return res.redirect("http://localhost:5173/login");
 };
