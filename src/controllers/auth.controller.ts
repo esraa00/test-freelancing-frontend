@@ -1,9 +1,10 @@
 import { NextFunction, Request, Response } from "express";
 import * as authService from "../services/auth.service";
-import { findById } from "../services/user.service";
+import { findById, updateUser } from "../services/user.service";
 import qrcode from "qrcode";
 import speakeasy from "speakeasy";
 import { ApiError } from "../response-handler/api-error";
+import { sign } from "../services/jwt.service";
 
 export const signup = async (
   req: Request,
@@ -66,9 +67,21 @@ export const validate = async (
     });
 
     if (!isOtpValid) throw ApiError.Forbidden("this otp is not correct");
-    if (!user.isOtpVerified) user.isOtpVerified;
+    if (!user.isOtpVerified) {
+      user.isOtpVerified = true;
+      updateUser(user, user.id);
+    }
+    const accessToken = sign(
+      { userId: user.id, is2FaAuthenticated: true },
+      process.env.USER_ACCESS_TOKEN_KEY
+    );
 
-    res.status(200).json({ status: 200, data: { isOtpValid } });
+    res
+      .status(200)
+      .cookie("accessToken", accessToken, {
+        maxAge: 30 * 60 * 1000,
+      })
+      .json({ status: 200, data: { isOtpValid } });
   } catch (error) {
     next(error);
   }
