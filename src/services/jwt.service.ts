@@ -1,5 +1,16 @@
 import jwt, { JsonWebTokenError, TokenExpiredError } from "jsonwebtoken";
 import { ApiError } from "../response-handler/api-error";
+import env from "env-var";
+
+const USER_ACCESS_TOKEN_KEY = env
+  .get("USER_ACCESS_TOKEN_KEY")
+  .required()
+  .asString();
+
+const USER_ACCESS_TOKEN_EXPIRY_DATE = env
+  .get("USER_ACCESS_TOKEN_EXPIRY_DATE")
+  .required()
+  .asString();
 
 export const sign = (
   data: string | object | Buffer,
@@ -32,4 +43,24 @@ export const verify = (
       throw error;
     }
   }
+};
+
+export const createAuthenticatedAccessToken = (userId: number) => {
+  return sign(
+    { userId, isAuthenticated: true, is2FaAuthenticated: false },
+    USER_ACCESS_TOKEN_KEY,
+    {
+      expiresIn: USER_ACCESS_TOKEN_EXPIRY_DATE,
+    }
+  );
+};
+
+export const create2FaAuthenticatedAccessToken = (userId: number) => {
+  return sign(
+    { userId, isAuthenticated: true, is2FaAuthenticated: true },
+    USER_ACCESS_TOKEN_KEY,
+    {
+      expiresIn: USER_ACCESS_TOKEN_EXPIRY_DATE,
+    }
+  );
 };
