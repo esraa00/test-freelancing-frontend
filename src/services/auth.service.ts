@@ -1,22 +1,12 @@
 import { create, findByEmail } from "./user.service";
-import { sendMail } from "./email.service";
 import bcrypt from "bcrypt";
 import { serializeUser } from "../utils/serialize";
 import { hashEmailVerificationToken } from "./email.service";
 import { ApiError } from "../response-handler/api-error";
 import speakeasy from "speakeasy";
 import { Prisma } from "@prisma/client";
-import { sign } from "./jwt.service";
-
-const createAccessToken = (userId: number, is2FaAuthenticated: boolean) => {
-  return sign(
-    { userId, is2FaAuthenticated },
-    process.env.USER_ACCESS_TOKEN_KEY,
-    {
-      expiresIn: process.env.USER_ACCESS_TOKEN_EXPIRY_DATE,
-    }
-  );
-};
+import { sendEmailVerificationEmail } from "./email-templates";
+import { createAuthenticatedAccessToken } from "./jwt.service";
 
 export const signup = async ({
   firstName,
@@ -43,16 +33,7 @@ export const signup = async ({
       otpAuthUrl: secret.otpauth_url,
     });
     const token = hashEmailVerificationToken(createdUser.id);
-    sendMail({
-      to: createdUser.email,
-      subject: "Hello store Email Verification",
-      from: "em4728644@gmail.com",
-      html: `
-    <h1>Hello Store</h1>
-    <p>Please click the following link to verify your email:</p>
-    <a href="http://localhost:3000/api/email/confirmation/${token}">Verify Email</a>
-    `,
-    });
+    sendEmailVerificationEmail(createdUser.email, token);
     return serializeUser(createdUser);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -81,7 +62,7 @@ export const login = async ({
   if (!userFound.isEmailConfirmed)
     throw ApiError.UnAuthorized("please confirm your email first");
 
-  const accessToken = createAccessToken(userFound.id, false);
+  const accessToken = createAuthenticatedAccessToken(userFound.id);
   return {
     accessToken,
     isOtpVerified: userFound.isOtpVerified,
