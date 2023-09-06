@@ -8,9 +8,10 @@ import userRoutes from "./routes/user.route";
 import errorHandling from "./middleware/error-handling.middleware";
 import("../prisma/client");
 import cors from "cors";
+import * as env from "env-var";
 
 const app = express();
-const port = 3000;
+const PORT: number = env.get("PORT").required().asIntPositive();
 
 app.use(cors({ credentials: true, origin: "http://localhost:5173" }));
 app.use(express.json());
@@ -22,8 +23,6 @@ app.use("/api/email", emailRoutes);
 app.use("/api/users", userRoutes);
 app.use(errorHandling);
 
-app.listen(port, () => {
-  return console.log(
-    `Express is listening at http://localhost:${process.env.PORT}`
-  );
+app.listen(PORT, () => {
+  return console.log(`Express is listening at http://localhost:${PORT}`);
 });

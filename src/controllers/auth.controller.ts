@@ -5,6 +5,12 @@ import qrcode from "qrcode";
 import speakeasy from "speakeasy";
 import { ApiError } from "../response-handler/api-error";
 import { sign } from "../services/jwt.service";
+import env from "env-var";
+
+const USER_ACCESS_TOKEN_KEY = env
+  .get("USER_ACCESS_TOKEN_KEY")
+  .required()
+  .asString();
 
 export const signup = async (
   req: Request,
@@ -69,11 +75,11 @@ export const validate = async (
     if (!isOtpValid) throw ApiError.Forbidden("this otp is not correct");
     if (!user.isOtpVerified) {
       user.isOtpVerified = true;
-      updateUser(user, user.id);
+      await updateUser(user, user.id);
     }
     const accessToken = sign(
       { userId: user.id, is2FaAuthenticated: true },
-      process.env.USER_ACCESS_TOKEN_KEY
+      USER_ACCESS_TOKEN_KEY
     );
 
     res
