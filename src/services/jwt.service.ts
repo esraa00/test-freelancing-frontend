@@ -47,7 +47,7 @@ export const verify = (
 
 export const createAuthenticatedAccessToken = (userId: number) => {
   return sign(
-    { userId, isAuthenticated: true, is2FaAuthenticated: false },
+    { userId, isAuthenticated: true, isTwoFactorAuthenticated: false },
     USER_ACCESS_TOKEN_KEY,
     {
       expiresIn: USER_ACCESS_TOKEN_EXPIRY_DATE,
@@ -57,10 +57,14 @@ export const createAuthenticatedAccessToken = (userId: number) => {
 
 export const create2FaAuthenticatedAccessToken = (userId: number) => {
   return sign(
-    { userId, isAuthenticated: true, is2FaAuthenticated: true },
+    { userId, isAuthenticated: true, isTwoFactorAuthenticated: true },
     USER_ACCESS_TOKEN_KEY,
     {
       expiresIn: USER_ACCESS_TOKEN_EXPIRY_DATE,
     }
   );
+};
+
+export const verifyAuthenticationToken = (token: string) => {
+  return verify("your session", token, USER_ACCESS_TOKEN_KEY);
 };

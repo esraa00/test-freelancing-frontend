@@ -5,7 +5,7 @@ import { hashEmailVerificationToken } from "./email.service";
 import { ApiError } from "../response-handler/api-error";
 import speakeasy from "speakeasy";
 import { Prisma } from "@prisma/client";
-import { sendEmailVerificationEmail } from "./email-templates";
+import { sendEmailVerification } from "./email-templates";
 import { createAuthenticatedAccessToken } from "./jwt.service";
 
 export const signup = async ({
@@ -33,7 +33,7 @@ export const signup = async ({
       otpAuthUrl: secret.otpauth_url,
     });
     const token = hashEmailVerificationToken(createdUser.id);
-    sendEmailVerificationEmail(createdUser.email, token);
+    sendEmailVerification(createdUser.email, token);
     return serializeUser(createdUser);
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {

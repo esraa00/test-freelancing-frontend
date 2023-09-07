@@ -1,6 +1,6 @@
 import { sendMail } from "./email.service";
 
-export const sendEmailVerificationEmail = (email: string, token: string) => {
+export const sendEmailVerification = (email: string, token: string) => {
   return sendMail({
     to: email,
     subject: "Hello store Email Verification",
