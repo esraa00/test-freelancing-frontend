@@ -4,6 +4,11 @@ import isAuthenticated from "../middleware/is-authenticated.middleware";
 
 const router = Router();
 
+router.get("/isAuthenticated", authController.isAuthenticated);
+router.get(
+  "/isTwoFactorAuthenticated",
+  authController.isTwoFactorAuthenticated
+);
 router.post("/signup", authController.signup);
 router.post("/login", authController.login);
 router.get("/otp/generate", isAuthenticated, authController.generate);

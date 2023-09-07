@@ -4,13 +4,10 @@ import { findById, updateUser } from "../services/user.service";
 import qrcode from "qrcode";
 import speakeasy from "speakeasy";
 import { ApiError } from "../response-handler/api-error";
-import { sign } from "../services/jwt.service";
-import env from "env-var";
-
-const USER_ACCESS_TOKEN_KEY = env
-  .get("USER_ACCESS_TOKEN_KEY")
-  .required()
-  .asString();
+import {
+  create2FaAuthenticatedAccessToken,
+  verifyAuthenticationToken,
+} from "../services/jwt.service";
 
 export const signup = async (
   req: Request,
@@ -38,6 +35,38 @@ export const login = async (
       })
       .status(200)
       .json({ status: 200, data: { isOtpVerified } });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const isAuthenticated = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const accessToken = req.cookies.accessToken;
+    const payload = verifyAuthenticationToken(accessToken);
+    if (!payload.isAuthenticated)
+      throw ApiError.Forbidden("please login first");
+    res.status(200).json({ isAuthenticated: true });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const isTwoFactorAuthenticated = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const accessToken = req.cookies.accessToken;
+    const payload = verifyAuthenticationToken(accessToken);
+    if (!payload.isTwoFactorAuthenticated)
+      throw ApiError.Forbidden("please complete the 2fa step");
+    res.status(200).json({ isTwoFactorAuthenticated: true });
   } catch (error) {
     next(error);
   }
@@ -77,11 +106,7 @@ export const validate = async (
       user.isOtpVerified = true;
       await updateUser(user, user.id);
     }
-    const accessToken = sign(
-      { userId: user.id, is2FaAuthenticated: true },
-      USER_ACCESS_TOKEN_KEY
-    );
-
+    const accessToken = create2FaAuthenticatedAccessToken(user.id);
     res
       .status(200)
       .cookie("accessToken", accessToken, {
