@@ -8,8 +8,7 @@ const errorHandling = (
   next: NextFunction
 ) => {
   if (err instanceof ValidationError) {
-    const error = err.details.body[0].message;
-    return res.status(err.statusCode).json({ message: error });
+    return res.status(400).json({ message: err.message });
   }
   if (err instanceof ApiError) {
     return res.status(err.code).json({ message: err.message });
